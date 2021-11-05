@@ -33,7 +33,7 @@ export default class TestScene extends Phaser.Scene{
     create(){
 
         this.createStage1()
-        this.createBiker()
+        this.biker = this.createBiker()
 
         this.physics.add.collider(this.biker, this.floor)
 
@@ -55,12 +55,13 @@ export default class TestScene extends Phaser.Scene{
 
         
     }
-    createBiker(){
-        this.biker = this.physics.add.sprite(100,450,BIKER_KEY);
-        this.biker.setScale(3)
-        this.biker.setBounce(0)
-        this.biker.setCollideWorldBounds(true)
-        this.biker.body.setSize(2)
+    createBiker(id = 1){
+        this.id = id
+        const biker = this.physics.add.sprite(100,450,BIKER_KEY);
+        biker.setScale(3)
+        biker.setBounce(0)
+        biker.setCollideWorldBounds(true)
+        biker.body.setSize(2)
         
 
         this.anims.create({
@@ -98,6 +99,7 @@ export default class TestScene extends Phaser.Scene{
             repeat: -1
         })
 
+        return biker
     }
     
     update(){
