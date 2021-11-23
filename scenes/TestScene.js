@@ -9,6 +9,8 @@ const BIKER_JUMP_KEY = 'BIKER_JUMP_KEY'
 const BIKER_DOUBLE_JUMP_KEY = 'BIKER_DOUBLE_JUMP_KEY'
 const BIKER_ATTACK1_KEY = 'BIKER_ATTACK1_KEY'
 const BIKER_ATTACK2_KEY = 'BIKER_ATTACK2_KEY'
+const BIKER_RUN_ATTACK_KEY = 'BIKER_RUN_ATTACK_KEY'
+
 
 const WIDTH_RESCALE = 800 / 1920
 //const HEIGHT_RESCALE = 600/1080
@@ -32,6 +34,7 @@ export default class TestScene extends Phaser.Scene {
         this.load.spritesheet(BIKER_DOUBLE_JUMP_KEY, 'Biker/Biker_doublejump.png', { frameWidth: 48, frameHeight: 48 })
         this.load.spritesheet(BIKER_ATTACK1_KEY, 'Biker/Biker_attack1.png', { frameWidth: 48, frameHeight: 48 })
         this.load.spritesheet(BIKER_ATTACK2_KEY, 'Biker/Biker_attack2.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.spritesheet(BIKER_RUN_ATTACK_KEY, 'Biker/Biker_run_attack.png', { frameWidth: 48, frameHeight: 48 })
     }
 
     create() {
@@ -53,13 +56,21 @@ export default class TestScene extends Phaser.Scene {
             this.anims.play("idle")
         })
 
-        this.cursors.right.on("down",()=>{
-            let playerGrounded = this.biker.body.touching.down
-            this.biker.setVelocityX(10)
-
-            if (playerGrounded) this.biker.anims.play('right', true)
-            this.biker.flipX = false
+        this.biker.on("animationcomplete_attack2", function(){
+            this.anims.play("idle")
         })
+
+        this.biker.on("animationcomplete_run_attack", function(){
+            this.anims.play("idle")
+        })
+
+        // this.cursors.right.on("down",()=>{
+        //     let playerGrounded = this.biker.body.touching.down
+        //     this.biker.setVelocityX(10)
+
+        //     if (playerGrounded) this.biker.anims.play('right', true)
+        //     this.biker.flipX = false
+        // })
 
         this.cursors.up.on("down",()=>{
             let currentAnim = this.biker.anims.getName()
@@ -79,10 +90,30 @@ export default class TestScene extends Phaser.Scene {
             let playerGrounded = this.biker.body.touching.down
             console.log("about to punch...")
 
-            if(playerGrounded && currentAnim != "attack1"){
-                console.log("punch!")
-                this.biker.anims.play("attack1")
+            if(playerGrounded && !currentAnim.includes("attack")){
+                //console.log("previous anim is:",currentAnim)
+                this.biker.setVelocityX(this.biker.body.velocity.x / 2)
+                if(currentAnim == "right" || currentAnim == "left"){
+                    this.biker.anims.play("run_attack")
+                    this.biker.anims.on
+                }else{
+                    this.biker.anims.play("attack1")
+                    this.biker.anims.on
+                }
+            }
+        })
+
+        this.attackKey2.on("down",()=>{
+            let currentAnim = this.biker.anims.getName()
+            let playerGrounded = this.biker.body.touching.down
+            console.log("about to punch2...")
+
+            if(playerGrounded && currentAnim != "attack2"){
+                console.log("punch2!")
+                this.biker.anims.play("attack2")
                 this.biker.anims.on
+                this.biker.setVelocityX(this.biker.body.velocity.x / 2)
+                
             }
         })
     }
@@ -155,7 +186,14 @@ export default class TestScene extends Phaser.Scene {
             key: 'attack2',
             frames: this.anims.generateFrameNumbers(BIKER_ATTACK2_KEY, { start: 0, end: 5 }),
             frameRate: 15,
-            repeat: -1
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'run_attack',
+            frames: this.anims.generateFrameNumbers(BIKER_RUN_ATTACK_KEY, { start: 0, end: 5 }),
+            frameRate: 15,
+            repeat: 0
         })
 
         return biker
@@ -167,41 +205,27 @@ export default class TestScene extends Phaser.Scene {
         let currentAnim = this.biker.anims.getName();
 
         //console.log("frame name",this.biker.anims.getFrameName())
+        if(!currentAnim.includes("attack")){
+            if (this.cursors.right.isDown) {
+                this.biker.setVelocityX(400)
 
-        if (this.cursors.right.isDown) {
-            this.biker.setVelocityX(400)
+                if (playerGrounded) this.biker.anims.play('right',true)
+                this.biker.flipX = false
+            } else if (this.cursors.left.isDown) {
+                this.biker.setVelocityX(-400)
 
-            if (playerGrounded) this.biker.anims.play('right',true)
-            this.biker.flipX = false
-        } else if (this.cursors.left.isDown) {
-            this.biker.setVelocityX(-400)
+                if (playerGrounded) this.biker.anims.play('left', true)
+                this.biker.flipX = true
 
-            if (playerGrounded) this.biker.anims.play('left', true)
-            this.biker.flipX = true
 
-        // } else if (this.attackKey.isDown) {
+            } else {
 
-        //     if (playerGrounded) this.biker.anims.play('attack1', true)
-        //     this.biker.setVelocityX(0)
-
-        } else if (this.attackKey2.isDown) {
-
-            if (playerGrounded) this.biker.anims.play('attack2', true)
-            this.biker.setVelocityX(0)
-
-        } else {
-
-            if (playerGrounded && !currentAnim.includes("attack")){
-                this.biker.anims.play('idle', true)
-                this.biker.setVelocityX(0)
+                if (playerGrounded){
+                    this.biker.anims.play('idle', true)
+                    this.biker.setVelocityX(0)
+                }
             }
         }
-
-        // if (this.cursors.up.isDown && playerGrounded) {
-        //     this.biker.setVelocityY(-400)
-        //     this.biker.anims.play('jump')
-        //     console.log(this.biker.anims.currentAnim.getLastFrame())
-        // }
 
     }
 }
